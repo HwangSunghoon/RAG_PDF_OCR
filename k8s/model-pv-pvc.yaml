@@ -1,0 +1,30 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: models-pv
+  labels:
+    app: rag-pdf-ocr
+spec:
+  capacity:
+    storage: 10Gi
+  accessModes:
+    - ReadOnlyMany
+  storageClassName: models-sc
+  persistentVolumeReclaimPolicy: Retain
+  hostPath:
+    path: /data/rag-pdf-ocr/models
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: models-pvc
+  namespace: rag-pdf-ocr
+  labels:
+    app: rag-pdf-ocr
+spec:
+  accessModes:
+    - ReadOnlyMany
+  storageClassName: models-sc
+  resources:
+    requests:
+      storage: 10Gi

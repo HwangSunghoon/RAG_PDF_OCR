@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: llm
+  namespace: rag-pdf-ocr
+  labels:
+    app: llm
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: llm
+  template:
+    metadata:
+      labels:
+        app: llm
+    spec:
+      containers:
+        - name: llm
+          image: ghcr.io/ggerganov/llama.cpp:server
+          imagePullPolicy: IfNotPresent
+          args:
+            - "-m"
+            - "/app/models/ggml-model-Q4_K_M.gguf"
+            - "--mmproj"
+            - "/app/models/mmproj-model-f16.gguf"
+            - "--host"
+            - "0.0.0.0"
+            - "--port"
+            - "8080"
+            - "-c"
+            - "4096"
+            - "-ngl"
+            - "0"
+          ports:
+            - containerPort: 8080
+          volumeMounts:
+            - name: models-volume
+              mountPath: /app/models     # 👈 여기 중요
+      volumes:
+        - name: models-volume
+          persistentVolumeClaim:
+            claimName: models-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: llm-service
+  namespace: rag-pdf-ocr
+spec:
+  selector:
+    app: llm
+  ports:
+    - port: 8080
+      targetPort: 8080

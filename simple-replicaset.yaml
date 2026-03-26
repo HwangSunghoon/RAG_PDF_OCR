@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: ReplicaSet
+metadata:
+  name: my-replicaset
+  labels:
+    app: my-replicaset
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: my-little-pod
+  template:
+    metadata:
+      labels:
+        app: my-little-pod
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:latest
+        ports:
+        - containerPort: 80
+      - name: redis
+        image: redis
+        volumeMounts:
+        - name: redis-storage
+          mountPath: /data/redis
+      volumes:
+      - name: redis-storage
+        emptyDir: {}

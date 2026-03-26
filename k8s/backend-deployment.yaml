@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rag-backend
+  namespace: rag-pdf-ocr
+  labels:
+    app: rag-backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rag-backend
+  template:
+    metadata:
+      labels:
+        app: rag-backend
+    spec:
+      containers:
+        - name: rag-backend
+          image: sunghoonhwang/rag-backend:latest   # Docker Hub에 push한 backend 이미지
+          imagePullPolicy: Always
+          env:
+            # docker-compose.yml 에 있던 환경 변수들 반영
+            - name: HF_TOKEN                         # 여기는 빈 값으로 두고, 나중에 Secret로 넣어도 됨
+              value: ""
+            - name: HF_MODEL
+              value: "google/flan-t5-base"
+            - name: LLM_LOCAL_MODEL
+              value: "google/flan-t5-base"
+            - name: OCR_LANG
+              value: "kor+eng"
+            - name: EMBED_MODEL
+              value: "sentence-transformers/all-MiniLM-L6-v2"
+            - name: CHUNK_SIZE
+              value: "900"
+            - name: CHUNK_OVERLAP
+              value: "120"
+            - name: LLM_HTTP_URL
+              value: "http://llm-service:8080"       # K8s LLM Service 주소
+          ports:
+            - name: http
+              containerPort: 8000                    # uvicorn 포트
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend-service
+  namespace: rag-pdf-ocr
+  labels:
+    app: rag-backend
+spec:
+  selector:
+    app: rag-backend
+  ports:
+    - name: http
+      port: 8000          # 클러스터 내부에서 backend를 부르는 포트
+      targetPort: http    # 위 containerPort 이름(http)

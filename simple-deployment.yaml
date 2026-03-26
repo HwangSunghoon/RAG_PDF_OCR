@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-deployment
+  labels:
+    app: my-deployment-example
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: my-deployment-example
+  template:
+    metadata:
+      labels:
+        app: my-deployment-example
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:latest
+        ports:
+        - containerPort: 80
+      - name: redis
+        image: redis
+        volumeMounts:
+        - name: redis-storage
+          mountPath: /data/redis
+      volumes:
+      - name: redis-storage
+        emptyDir: {}
